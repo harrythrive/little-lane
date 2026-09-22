@@ -8,7 +8,7 @@ renderer.shadowMap.enabled=true;renderer.shadowMap.type=T.PCFSoftShadowMap;
 renderer.outputColorSpace=T.SRGBColorSpace;renderer.toneMapping=T.ACESFilmicToneMapping;renderer.toneMappingExposure=1.05;
 const scene=new T.Scene();scene.background=new T.Color('#d8e9e9');scene.fog=new T.Fog('#d8e9e9',90,220);
 const camera=new T.PerspectiveCamera(49,1,.1,300);camera.position.set(0,13,19);camera.lookAt(0,0,-19);
-scene.add(new T.HemisphereLight('#d3edff','#9b9868',1.6));
+const ambient=new T.HemisphereLight('#d3edff','#9b9868',1.6);scene.add(ambient);
 const sun=new T.DirectionalLight('#ffe0a1',2.8);sun.position.set(-32,42,-22);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-42,right:42,top:65,bottom:-35,near:1,far:145});sun.shadow.normalBias=.025;sun.shadow.bias=-.00015;sun.shadow.radius=4;sun.target.position.set(0,0,-25);scene.add(sun,sun.target);
 const fill=new T.DirectionalLight('#b8d3e8',.5);fill.position.set(20,10,10);scene.add(fill);
 const materials=new Map();function mat(color,roughness=.8){const key=color+roughness;if(!materials.has(key))materials.set(key,new T.MeshStandardMaterial({color,roughness,flatShading:true}));return materials.get(key)}
@@ -20,7 +20,7 @@ function taper(parent,w,d,h,x,y,z,color,shrink=.75){const p=[-w/2,0,-d/2,w/2,0,-
 const scale=.075;
 function vehicle(v){const g=new T.Group(),w=v.w*scale,d=v.h*scale,sport=v.name==='Sports car',suv=v.name==='SUV',bike=v.name==='Motorcycle';g.userData.wheels=[];g.userData.lamps=[];
 if(v.name==='Truck'){box(g,0,.55,0,w*.85,.3,d,'#394951');box(g,0,1.45,-d*.34,w,1.8,d*.29,v.color);box(g,0,1.92,-d*.491,w*.8,.58,.045,'#34566b');box(g,0,1.77,d*.12,w*.97,2.55,d*.65,'#e8e1cc');box(g,0,2,d*.454,w*.88,1.9,.035,'#b8bbad');for(const side of [-1,1]){box(g,side*w*.493,1.8,d*.1,.035,.25,d*.6,v.color);for(const z of [-d*.34,d*.24,d*.36]){const wh=mesh(g,tireGeo,mat('#26363d'),side*w*.45,.39,z);wh.scale.set(1.3,1.3,1.3);g.userData.wheels.push(wh)}box(g,side*w*.33,.9,-d*.494,.36,.2,.045,'#fff1c3');const tailMat=new T.MeshStandardMaterial({color:'#de7051',emissive:'#ff3311',emissiveIntensity:.25});box(g,side*w*.33,.7,d*.46,.24,.13,.045,tailMat);g.userData.lamps.push(tailMat);const signals=new T.Group();for(const z of [-d*.5,d*.47])box(signals,side*w*.48,.9,z,.12,.16,.12,new T.MeshStandardMaterial({color:'#ffb238',emissive:'#ff9911',emissiveIntensity:2}));g.add(signals);signals.visible=false;g.userData['signal'+side]=signals;}return g}
-if(bike){for(const z of [-d*.32,d*.32]){let wh=mesh(g,tireGeo,mat('#28333a'),0,.33,z);wh.scale.y=1.25;g.userData.wheels.push(wh)}box(g,0,.62,0,.44,.45,d*.67,v.color);box(g,0,.93,.25,.4,.1,.65,'#34454a');box(g,0,1.27,.13,.45,.63,.38,'#456877');mesh(g,new T.IcosahedronGeometry(.29,1),mat('#f4e3b4'),0,1.82,-.05);box(g,0,1.02,-d*.27,.8,.06,.1,'#323f44');return g}
+if(bike){for(const z of [-d*.32,d*.32]){let wh=mesh(g,tireGeo,mat('#28333a'),0,.33,z);wh.scale.y=1.25;g.userData.wheels.push(wh)}box(g,0,.62,0,.44,.45,d*.67,v.color);box(g,0,.93,.25,.4,.1,.65,'#34454a');box(g,0,1.27,.13,.45,.63,.38,'#456877');mesh(g,new T.IcosahedronGeometry(.29,1),mat('#f4e3b4'),0,1.82,-.05);box(g,0,1.02,-d*.27,.8,.06,.1,'#323f44');for(const side of [-1,1]){const signals=new T.Group();for(const z of [-d*.35,d*.35])box(signals,side*.32,.7,z,.1,.1,.1,new T.MeshStandardMaterial({color:'#ffb238',emissive:'#ff9911',emissiveIntensity:2}));g.add(signals);signals.visible=false;g.userData['signal'+side]=signals;}return g}
 if(suv){
 // Upright 70-series silhouette: square cabin, flat bonnet, rack and rear spare.
 box(g,0,.49,0,w*.9,.28,d*.88,'#36423d');
@@ -83,7 +83,7 @@ updateRoad(s);
 if(s.mode==='ready'&&!demo.length)demo.push({x:132,y:185,v:s.vehicles[2],oncoming:true},{x:348,y:20,v:{name:'Truck',w:38,h:122,color:'#d7a359'},oncoming:false});sync(s.mode==='ready'?demo:[...s.traffic,...s.police,...s.crossTraffic.map(t=>{t.crossing=true;return t})],'car');sync(s.animals,'pet');
 const portrait=canvas.clientWidth/canvas.clientHeight<.9;camera.position.y=portrait?17:13;camera.position.z=portrait?25:19;camera.fov=portrait?65:49;camera.position.x+=(player.position.x*(portrait?.65:.22)-camera.position.x)*.08;camera.lookAt(camera.position.x*(portrait?.75:.35),.2,-19);camera.updateProjectionMatrix();
 const width=canvas.clientWidth,height=canvas.clientHeight;if(canvas.width!==Math.round(width*renderer.getPixelRatio())||canvas.height!==Math.round(height*renderer.getPixelRatio())){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
-updateMedians(s);updateCrossroads(s);renderer.render(scene,camera);
+updateAtmosphere(s);updateMedians(s);updateCrossroads(s);renderer.render(scene,camera);
 };
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();document.getElementById('pause').click();document.getElementById('notice').textContent='Graphics paused. Reload to restore the view.'});
 
@@ -97,3 +97,15 @@ for(const p of props)p.g.visible=!s.junctions.some(j=>Math.abs(p.g.position.z-(j
 for(const side of [-1,1])box(scene,side*.62,.045,-80,.1,.015,420,'#e5c777');
 const medianPool=[];
 function updateMedians(s){while(medianPool.length<s.medians.length){const g=new T.Group();const body=box(g,0,.48,0,1.05,.96,1,'#b6b7a5');const cap=box(g,0,.99,0,.82,.06,1,'#e1d4a1');const ends=[];for(const side of [-1,1])ends.push(box(g,0,.65,side,.88,.45,.1,'#dc9a50'));g.userData={body,cap,ends};scene.add(g);medianPool.push(g)}medianPool.forEach((g,i)=>{g.visible=i<s.medians.length;if(!g.visible)return;const [a,b]=s.medians[i],length=(b-a)*.648;g.position.z=(s.distance-(a+b)/2)*.648;g.userData.body.scale.z=length;g.userData.cap.scale.z=length;g.userData.ends[0].position.z=-length/2;g.userData.ends[1].position.z=length/2})}
+
+// Visibility scales the same fog range in each lighting state; beams light the near road.
+const headlamps=[-1,1].map(side=>{const lamp=new T.SpotLight('#fff0c9',0,80,.43,.7,1);lamp.target=new T.Object3D();scene.add(lamp,lamp.target);return {lamp,side};});
+const skies=[new T.Color('#d8e9e9'),new T.Color('#aa7866'),new T.Color('#080f20')];
+function updateAtmosphere(s){const c=s.conditions||{weights:[1,0,0],glare:false,glareUntil:0},[day,dusk,night]=c.weights;
+ scene.background.setRGB(skies[0].r*day+skies[1].r*dusk+skies[2].r*night,skies[0].g*day+skies[1].g*dusk+skies[2].g*night,skies[0].b*day+skies[1].b*dusk+skies[2].b*night);scene.fog.color.copy(scene.background);
+ const visibility=day+.5*dusk+.3*night;scene.fog.near=90*visibility;scene.fog.far=220*visibility;
+ ambient.intensity=1.6*day+.55*dusk+.12*night;sun.intensity=2.8*day+.85*dusk+.025*night;sun.color.setRGB(1,.82*day+.43*dusk+.6*night,.55*day+.2*dusk+.9*night);fill.intensity=.5*day+.18*dusk+.055*night;
+ renderer.toneMappingExposure=1.05*day+.88*dusk+.85*night;
+ for(const {lamp,side} of headlamps){lamp.intensity=35*dusk+100*night;lamp.position.set(player.position.x+side*.65,1.05,-1.2);lamp.target.position.set(player.position.x+side*2-s.vx*.025,0,-42);lamp.distance=80;}
+ const remaining=Math.max(0,c.glareUntil-s.elapsed);document.getElementById('sun-glare').style.opacity=c.glare?String(dusk*.85*Math.min(1,remaining/2)):0;
+}
