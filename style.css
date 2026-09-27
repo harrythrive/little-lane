@@ -35,3 +35,10 @@ body.mobile-game #driving-controls{display:flex;justify-content:space-between;po
 #driving-controls button{width:clamp(58px,16vw,76px);height:76px;border:2px solid #fff4cf99;border-radius:18px;background:#29474bc9;color:#fff4d5;box-shadow:0 4px 0 #172f3866;font-size:12px;font-weight:700;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none}
 #driving-controls [data-drive=gas]{background:#54775aca}#driving-controls [data-drive=brake]{background:#93624fca}#driving-controls .steering-controls button{font-size:24px}#driving-controls button.held{background:#edb477;color:#263e3a;transform:translateY(3px);box-shadow:none}
 @media(orientation:landscape){body.mobile-game #driving-controls{left:calc(24px + env(safe-area-inset-left));right:calc(24px + env(safe-area-inset-right))}#driving-controls button{height:66px;width:76px}body.mobile-game #overlay{padding:75px 24px 20px}body.mobile-game #overlay h2{font-size:26px;margin:8px 0}body.mobile-game #overlay p{margin:8px 0}body.mobile-game #start{margin-top:10px}body.mobile-game .dashboard{justify-content:flex-start}body.mobile-game .dashboard #lives{margin-left:8px}}
+
+/* Stacked pedals leave room for broad steering targets. */
+body.mobile-game #driving-controls{align-items:flex-end;gap:20px}
+.pedal-controls{flex-direction:column;flex-shrink:0}
+#driving-controls .pedal-controls button{width:72px;height:60px}
+#driving-controls .steering-controls button{width:clamp(82px,24vw,120px);height:76px}
+@media(orientation:landscape){#driving-controls .pedal-controls button{height:54px}#driving-controls .steering-controls button{width:120px;height:66px}}
