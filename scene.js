@@ -110,7 +110,7 @@ updateRoad(s);
 if(s.mode==='ready'&&!demo.length)demo.push({x:132,y:185,v:s.vehicles[2],oncoming:true},{x:348,y:20,v:{name:'Truck',w:38,h:122,color:'#d7a359'},oncoming:false});sync(s.mode==='ready'?demo:[...s.traffic,...s.police,...s.crossTraffic.map(t=>{t.crossing=true;return t})],'car');sync(s.animals,'pet');
 const portrait=canvas.clientWidth/canvas.clientHeight<.9;camera.position.y=portrait?17:13;camera.position.z=portrait?25:19;camera.fov=portrait?65:49;camera.position.x+=(player.position.x*(portrait?.65:.22)-camera.position.x)*.08;camera.lookAt(camera.position.x*(portrait?.75:.35),.2,-19);camera.updateProjectionMatrix();
 const width=canvas.clientWidth,height=canvas.clientHeight;if(canvas.width!==Math.round(width*renderer.getPixelRatio())||canvas.height!==Math.round(height*renderer.getPixelRatio())){renderer.setSize(width,height,false);camera.aspect=width/height;camera.updateProjectionMatrix()}
-updatePotholeMeshes(s);updateTrack(s);updateBendBanks(s);updateAtmosphere(s);updateMedians(s);updateCrossroads(s);renderer.render(scene,camera);
+updateFuelModels(s);updatePotholeMeshes(s);updateTrack(s);updateBendBanks(s);updateAtmosphere(s);updateMedians(s);updateCrossroads(s);renderer.render(scene,camera);
 };
 canvas.addEventListener('webglcontextlost',event=>{event.preventDefault();document.getElementById('pause').click();document.getElementById('notice').textContent='Graphics paused. Reload to restore the view.'});
 
@@ -144,4 +144,9 @@ function updateAtmosphere(s){const c=s.conditions||{weights:[1,0,0],glare:false,
 const potholeMeshes=[];
 function updatePotholeMeshes(s){const holes=s.potholes||[];while(potholeMeshes.length<holes.length){const g=new T.Group();const rim=mesh(g,new T.CircleGeometry(1,9),mat('#827e70'),0,.06,0);rim.rotation.x=-Math.PI/2;const hollow=mesh(g,new T.CircleGeometry(.77,9),mat('#253338'),0,.065,0);hollow.rotation.x=-Math.PI/2;hollow.position.x=.08;rim.castShadow=hollow.castShadow=false;for(let i=0;i<5;i++){const a=i*Math.PI*2/5;const stone=box(g,Math.cos(a)*.85,.07,Math.sin(a)*.85,.15,.045,.12,'#a6a090');stone.rotation.y=a;}scene.add(g);potholeMeshes.push(g);}
  potholeMeshes.forEach((g,i)=>{g.visible=i<holes.length;if(!g.visible)return;const h=holes[i];placeOnRoad(g,h.at-s.distance,(h.x-240)*scale);g.scale.set(h.w*scale/2,1,h.h*scale/2);});
+}
+
+const fuelModels=[];
+function updateFuelModels(s){const cans=(s.fuelPickups||[]).filter(f=>!f.collected);while(fuelModels.length<cans.length){const g=new T.Group(),can=new T.Group();box(can,0,1.3,0,1.05,1.4,.6,'#efc54e');box(can,0,2.08,0,.65,.18,.28,'#e5b23b');box(can,.3,2.05,0,.2,.35,.24,'#3e5751');box(can,0,1.3,.315,.5,.7,.03,'#fff6ce');box(can,0,1.3,.34,.1,.5,.03,'#427967');box(can,0,1.3,.34,.38,.1,.03,'#427967');g.add(can);g.userData.can=can;const ring=mesh(g,new T.RingGeometry(1.1,1.45,24),new T.MeshBasicMaterial({color:'#eedd83',side:T.DoubleSide}),0,.075,0);ring.rotation.x=-Math.PI/2;ring.castShadow=false;scene.add(g);fuelModels.push(g);}
+ fuelModels.forEach((g,i)=>{g.visible=i<cans.length;if(!g.visible)return;const f=cans[i];placeOnRoad(g,f.at-s.distance,(f.x-240)*scale);g.userData.can.rotation.y=s.elapsed*1.2;g.userData.can.position.y=Math.sin(s.elapsed*3)*.12;});
 }
